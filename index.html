@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para ti</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@1,600&display=swap');
+
+        :root {
+            --text-color: #2c2c2c;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-color);
+            overflow: hidden;
+            background: linear-gradient(135deg, #fff0f3 0%, #ffeaf2 100%);
+            touch-action: manipulation;
+        }
+
+        /* ----- PANTALLA BLANCA (CORTINAS) ----- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            display: flex;
+            pointer-events: none;
+        }
+
+        .curtain {
+            width: 50%;
+            height: 100%;
+            background: #ffffff;
+            transition: transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+            pointer-events: auto;
+        }
+
+        .curtain-left {
+            transform-origin: left;
+        }
+
+        .curtain-right {
+            transform-origin: right;
+        }
+
+        /* Título inicial */
+        .intro-title {
+            position: fixed;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            color: #000;
+            z-index: 102;
+            transition: opacity 1s, transform 1s;
+            pointer-events: none;
+            text-align: center;
+            width: 100%;
+        }
+
+        .intro-title span {
+            display: block;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 300;
+            margin-top: 10px;
+            color: #555;
+            letter-spacing: 2px;
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* ----- EL CORAZÓN NEGRO GIGANTE ----- */
+        .heart-wrapper {
+            position: fixed;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            z-index: 105;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: pulse 2s infinite;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .heart-wrapper:hover,
+        .heart-wrapper:active {
+            transform: translate(-50%, -50%) scale(1.05);
+            animation: none;
+        }
+
+        .heart-half {
+            position: absolute;
+            top: 0;
+            width: 150px;
+            /* Exactamente la mitad */
+            height: 300px;
+            overflow: hidden;
+            transition: transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1), opacity 1.2s;
+        }
+
+        .heart-half-left {
+            left: 0;
+        }
+
+        .heart-half-right {
+            right: 0;
+        }
+
+        .heart-half svg {
+            position: absolute;
+            top: 0;
+            width: 300px;
+            height: 300px;
+            fill: #000000;
+            filter: drop-shadow(0px 15px 25px rgba(0, 0, 0, 0.15));
+        }
+
+        .heart-half-left svg {
+            left: 0;
+        }
+
+        /* AQUÍ ESTABA EL ERROR: Aseguramos que la mitad derecha se alinee perfectamente */
+        .heart-half-right svg {
+            left: -150px;
+        }
+
+        /* ----- ANIMACIÓN AL ABRIR ----- */
+        body.is-open .curtain-left {
+            transform: translateX(-100%);
+        }
+
+        body.is-open .curtain-right {
+            transform: translateX(100%);
+        }
+
+        body.is-open .heart-half-left {
+            transform: translateX(-50vw) rotate(-15deg);
+            opacity: 0;
+        }
+
+        body.is-open .heart-half-right {
+            transform: translateX(50vw) rotate(15deg);
+            opacity: 0;
+        }
+
+        body.is-open .intro-title {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-30px);
+        }
+
+        body.is-open .heart-wrapper {
+            pointer-events: none;
+        }
+
+        /* ----- CONTENIDO PRINCIPAL (El Mensaje) ----- */
+        .main-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 10;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 1.5s ease 0.5s, transform 1.5s ease 0.5s;
+        }
+
+        body.is-open .main-content {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .message-container {
+            max-width: 800px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 3rem;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            z-index: 15;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .message-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(90deg, #ff4e50 0%, #f9d423 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .message-text {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .message-text p {
+            margin-bottom: 1.2rem;
+        }
+
+        .message-text strong {
+            font-weight: 800;
+            color: #000000;
+        }
+
+        /* Gatito (Usamos una imagen en línea para que cargue en el celular si se lo envías) */
+        .kitten {
+            position: fixed;
+            bottom: -500px;
+            right: -500px;
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transition: all 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.8s;
+            z-index: 20;
+            border: 12px solid white;
+        }
+
+        body.is-open .kitten {
+            bottom: 30px;
+            right: 30px;
+            transform: rotate(-12deg);
+        }
+
+        .particle {
+            position: absolute;
+            background: #ff7eb3;
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+            animation: floatParticle 6s infinite linear;
+        }
+
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 0.6;
+            }
+
+            80% {
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(-100vh) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.08);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* ----- DISEÑO RESPONSIVE PARA CELULARES ----- */
+        @media (max-width: 768px) {
+            .intro-title {
+                font-size: 2.8rem;
+                top: 12%;
+            }
+
+            .intro-title span {
+                font-size: 1.1rem;
+            }
+
+            /* Ajuste del tamaño del corazón para móviles */
+            .heart-wrapper {
+                width: 220px;
+                height: 220px;
+                top: 50%;
+            }
+
+            .heart-half {
+                width: 110px;
+                height: 220px;
+            }
+
+            .heart-half svg {
+                width: 220px;
+                height: 220px;
+            }
+
+            .heart-half-right svg {
+                left: -110px;
+            }
+
+            /* Ajuste perfecto a la mitad */
+
+            /* Ajuste del cuadro de texto */
+            .message-container {
+                padding: 1.8rem;
+                width: 90%;
+                border-radius: 20px;
+            }
+
+            .message-title {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+
+            .message-text {
+                font-size: 1.1rem;
+                line-height: 1.5;
+            }
+
+            /* Ajuste de la imagen del gatito */
+            .kitten {
+                width: 150px;
+                height: 150px;
+                border-width: 6px;
+            }
+
+            body.is-open .kitten {
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+
+        @media (max-height: 700px) {
+
+            /* En pantallas bajitas, que el texto se pueda scrollear si es necesario */
+            .message-container {
+                padding: 1.5rem;
+            }
+
+            .message-title {
+                font-size: 1.8rem;
+            }
+
+            .message-text {
+                font-size: 1rem;
+            }
+
+            .heart-wrapper {
+                top: 55%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="overlay">
+        <div class="curtain curtain-left"></div>
+        <div class="curtain curtain-right"></div>
+    </div>
+
+    <div class="intro-title" id="introTitle">
+        Para ti
+        <span>(toca el corazón)</span>
+    </div>
+
+    <!-- CORAZÓN NEGRO -->
+    <div class="heart-wrapper" id="heartBtn" aria-label="Presiona el corazón">
+        <div class="heart-half heart-half-left">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+        </div>
+        <div class="heart-half heart-half-right">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        <div class="message-container">
+            <div class="message-title">¿De aquí a dónde?</div>
+            <div class="message-text">
+                <p> <em>"Si hubiera una medición en distancia para la cantidad que me amas, ¿de
+                        aquí a dónde sería?"</em></p>
+                <p>Para mi la verdad es que <strong>no hay ninguna medición que alcance a medir lo que siento por
+                        ti</strong>.</p>
+                <p>Pero al mirar tus ojos, veo una distancia tan grande y tan oscura, que siento que <strong>ahí
+                        creo
+                        que se puede medir mi amor</strong>. Porque no hay nada tangible ni intangible que defina el
+                    amor que siento por ti cuando te miro a los ojos. te amo muto jijiji 🖤</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usamos una imagen de un gatito adorable desde internet para que cargue sin problema si se lo envías por celular -->
+    <img src=descarga.jpg alt="" class="kitten" id="kittenImg">
+
+    <script>
+        const heartBtn = document.getElementById('heartBtn');
+
+        heartBtn.addEventListener('click', () => {
+            document.body.classList.add('is-open');
+            createParticles();
+        });
+
+        function createParticles() {
+            const mainContent = document.querySelector('.main-content');
+            for (let i = 0; i < 25; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                const size = Math.random() * 8 + 4;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.top = Math.random() * 50 + 100 + 'vh';
+
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                particle.style.animationDuration = Math.random() * 5 + 4 + 's';
+
+                const colors = ['#ff7eb3', '#ff758c', '#ff4e50', '#ffffff', '#ffd1dc'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+                mainContent.appendChild(particle);
+            }
+        }
+    </script>
+</body>
+
+</html>
